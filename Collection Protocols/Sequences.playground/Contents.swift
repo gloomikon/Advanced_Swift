@@ -116,3 +116,94 @@ func fibsIterator2() -> AnyIterator<Int> {
 
 let fibsSequnce = AnySequence(fibsIterator2)
 print(Array(fibsSequnce.prefix(10))) // [0, 1, 1, 2, 3, 5, 8, 13, 21, 34]
+
+// MARK: - Subsequnces
+
+/**
+protocol Sequence {
+    associatedtype Element
+    associatedtype Iterator: IteratorProtocol
+        where Iterator.Element == Element
+    associatedtype SubSequence
+    // ...
+}
+*/
+extension Sequence where Element: Equatable {
+    func headMirrorsTails(_ n: Int) -> Bool {
+        let head = prefix(n)
+        let tail = suffix(n).reversed()
+        return head.elementsEqual(tail)
+    }
+}
+
+print([1, 2, 3, 4, 2, 1].headMirrorsTails(2)) // true
+
+// MARK: - A Linked List
+
+enum List<Element> {
+    case end
+    indirect case node(Element, next: List<Element>)
+}
+
+let emptyList = List<Int>.end
+let oneElementList = List.node(17, next: emptyList)
+
+extension List {
+    // construct
+    func cons(_ x: Element) -> List {
+        return .node(x, next: self)
+    }
+}
+// A 3-elements list of (3, 2, 1)
+
+let list = List<Int>.end.cons(1).cons(2).cons(3) // pretty ugly though
+
+extension List: ExpressibleByArrayLiteral {
+    typealias ArrayLiteralElement = Element
+
+    init(arrayLiteral elements: Element...) {
+        self = elements.reversed().reduce(.end) { particialResult, element in
+            return particialResult.cons(element)
+        }
+    }
+}
+
+var listFromArray: List = [3, 2, 1]
+
+extension List {
+    mutating func push(_ x: Element) {
+        self = self.cons(x)
+    }
+
+    mutating func pop() -> Element? {
+        switch self {
+        case .end:
+            return nil
+        case let .node(element, next: tail):
+            self = tail
+            return element
+        }
+    }
+}
+
+listFromArray.push(5)
+print(listFromArray)
+print(listFromArray.pop())
+
+extension List: IteratorProtocol, Sequence {
+    mutating func next() -> Element? {
+        return pop()
+    }
+}
+
+let oneMoreList: List = ["1", "2", "3", "4", "5"]
+
+for x in oneMoreList {
+    print(x, terminator: " ") // 1 2 3 4 5
+}
+
+print()
+
+print(oneMoreList.joined(separator: ", ")) // 1, 2, 3, 4, 5
+print(oneMoreList.contains("2")) // true
+print(oneMoreList.compactMap { Int($0) }) // [1, 2, 3, 4, 5]
