@@ -57,3 +57,18 @@ struct Words: Collection {
 
 print(Array(Words("Hello Bethany Tusen"))) // ["Hello", "Bethany", "Tusen"]
 
+// MARK: - Slices
+
+let words: Words = Words("one two three")
+let onePastStart = words.index(after: words.startIndex)
+let firstDrop = words[onePastStart..<words.endIndex]
+print(Array(firstDrop))
+
+extension Words {
+    subscript(bounds: Range<WordsIndex>) -> Words {
+        let start = bounds.lowerBound.range.lowerBound
+        let end = bounds.upperBound.range.upperBound
+        return Words(string[start..<end])
+    }
+}
+
