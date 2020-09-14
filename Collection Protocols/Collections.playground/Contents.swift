@@ -35,7 +35,7 @@ struct FIFOQueue<Element>: Queue {
 
 // MARK: - Conforming to Collection
 
-extension FIFOQueue: Collection {
+extension FIFOQueue: MutableCollection {
     public var startIndex: Int {
         return 0
     }
@@ -50,12 +50,23 @@ extension FIFOQueue: Collection {
     }
 
     public subscript(position: Int) -> Element {
-        precondition((0..<endIndex).contains(position), "Index out of bounds")
-        if position < left.endIndex {
-            return left[left.count - position - 1]
+        get {
+            precondition((0..<endIndex).contains(position), "Index out of bounds")
+            if position < left.endIndex {
+                return left[left.count - position - 1]
+            }
+            else {
+                return right[position - left.count]
+            }
         }
-        else {
-            return right[position - left.count]
+        set {
+            precondition((0..<endIndex).contains(position), "Index out of bounds")
+            if position < left.endIndex {
+                left[left.count - position - 1] = newValue
+            }
+            else {
+                right[position - left.count] = newValue
+            }
         }
     }
 }
@@ -93,3 +104,21 @@ extension FIFOQueue {
         return startIndex..<endIndex
     }
 }
+
+// Mutable collection example
+var peopleIHate: FIFOQueue = ["bt", "BT", "bT", "BT"]
+print(peopleIHate.first)
+peopleIHate[0] = "BT"
+print(peopleIHate.first)
+
+// RangeReplaceableCollection
+
+extension FIFOQueue: RangeReplaceableCollection {
+    mutating func replaceSubrange<C: Collection>(_ subrange: Range<Int>, with newElements: C) where C.Element == Element {
+        right = left.reversed() + right
+        left.removeAll()
+        right.replaceSubrange(subrange, with: newElements)
+    }
+}
+
+
