@@ -32,7 +32,3 @@ enum Either<A: Codable, B: Codable>: Codable {
         }
     }
 }
-
-// Decoding Polymorphic Collections
-
-
